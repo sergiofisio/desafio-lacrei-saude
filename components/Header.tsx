@@ -9,8 +9,8 @@ import { Container } from "@/components/Layout";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const HeaderBar = styled.header`
-  position: sticky;
-  top: 0;
+  position: relative;
+  flex-shrink: 0;
   z-index: 50;
   background: ${({ theme }) => theme.colors.background};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};

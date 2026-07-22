@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
-import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
-import { PageTransition } from "@/components/PageTransition";
-import { SkipToContent } from "@/components/SkipToContent";
+import { AppShell } from "@/components/AppShell";
 import StyledComponentsRegistry from "@/lib/registry";
 
 const nunito = Nunito({
@@ -47,20 +44,7 @@ export default function RootLayout({
       </head>
       <body>
         <StyledComponentsRegistry>
-          <SkipToContent />
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              minHeight: "100vh",
-            }}
-          >
-            <Header />
-            <main id="main-content" tabIndex={-1} style={{ flex: 1 }}>
-              <PageTransition>{children}</PageTransition>
-            </main>
-            <Footer />
-          </div>
+          <AppShell>{children}</AppShell>
         </StyledComponentsRegistry>
       </body>
     </html>

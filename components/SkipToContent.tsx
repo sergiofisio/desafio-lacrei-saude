@@ -3,7 +3,7 @@
 import styled from "styled-components";
 
 const Link = styled.a`
-  position: absolute;
+  position: fixed;
   left: 1rem;
   top: -100px;
   z-index: 1000;

@@ -14,12 +14,14 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   html {
-    scroll-behavior: smooth;
+    height: 100%;
+    overflow: hidden;
     color-scheme: ${({ theme }) => theme.mode};
   }
 
   body {
-    min-height: 100vh;
+    height: 100%;
+    overflow: hidden;
     font-family: ${({ theme }) => theme.fonts.main};
     font-weight: ${({ theme }) => theme.fontWeights.regular};
     color: ${({ theme }) => theme.colors.textBody};

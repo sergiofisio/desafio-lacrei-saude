@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { Container } from "@/components/Layout";
 
 const FooterBar = styled.footer`
-  margin-top: auto;
+  flex-shrink: 0;
   background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.textInvert};
 `;
@@ -13,14 +13,16 @@ const FooterBar = styled.footer`
 const Inner = styled(Container)`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  padding-top: 2.5rem;
-  padding-bottom: 2.5rem;
+  gap: 1rem;
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
 
   @media (min-width: ${({ theme }) => theme.breakpoints.tablet}) {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
   }
 `;
 
