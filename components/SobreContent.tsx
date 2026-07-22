@@ -1,11 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+} from "motion/react";
 import styled from "styled-components";
 import { Button } from "@/components/Button";
 import { Container, Section } from "@/components/Layout";
 import { ProfessionalsExplorer } from "@/components/ProfessionalsExplorer";
 import { ValueCard } from "@/components/ValueCard";
+import { ValueCardSkeleton } from "@/components/ValueCardSkeleton";
 import { buscarValores, type Valor } from "@/lib/mockApi";
 
 const Intro = styled.div`
@@ -39,7 +45,7 @@ const ValuesTitle = styled.h2`
   }
 `;
 
-const Grid = styled.div`
+const Grid = styled(motion.div)`
   display: grid;
   gap: 1.25rem;
   margin-bottom: 3rem;
@@ -53,12 +59,23 @@ const Grid = styled.div`
   }
 `;
 
-const Status = styled.p`
-  color: ${({ theme }) => theme.colors.textBody};
-  margin-bottom: 1rem;
+const CardMotion = styled(motion.div)`
+  height: 100%;
 `;
 
-const ErrorBox = styled.div`
+const Status = styled.p`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+`;
+
+const ErrorBox = styled(motion.div)`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -78,16 +95,24 @@ const Actions = styled.div`
   margin-bottom: 1.5rem;
 `;
 
+const ValuesBlock = styled.div`
+  position: relative;
+  min-height: 160px;
+`;
+
 type StatusState = "idle" | "loading" | "success" | "error";
 
 export function SobreContent() {
   const [valores, setValores] = useState<Valor[]>([]);
-  const [status, setStatus] = useState<StatusState>("idle");
+  const [status, setStatus] = useState<StatusState>("loading");
   const [errorMessage, setErrorMessage] = useState("");
+  const [loadKey, setLoadKey] = useState(0);
+  const reduceMotion = useReducedMotion();
 
   const carregar = useCallback(async () => {
     setStatus("loading");
     setErrorMessage("");
+    setLoadKey((key) => key + 1);
 
     try {
       const data = await buscarValores();
@@ -127,35 +152,94 @@ export function SobreContent() {
           <ValuesTitle id="valores-heading">Nossos valores</ValuesTitle>
 
           <Actions>
-            <Button type="button" variant="secondary" onClick={() => void carregar()}>
-              Atualizar
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => void carregar()}
+              disabled={status === "loading"}
+            >
+              {status === "loading" ? "Atualizando…" : "Atualizar"}
             </Button>
           </Actions>
 
-          {status === "loading" ? (
-            <Status role="status">Carregando valores…</Status>
-          ) : null}
+          <ValuesBlock>
+            {status === "loading" ? (
+              <Status role="status">Carregando valores…</Status>
+            ) : null}
 
-          {status === "error" ? (
-            <ErrorBox role="alert">
-              <p>{errorMessage || "Não foi possível carregar os valores."}</p>
-              <Button variant="primary" onClick={() => void carregar()}>
-                Tentar novamente
-              </Button>
-            </ErrorBox>
-          ) : null}
+            <AnimatePresence mode="wait">
+              {status === "loading" ? (
+                <Grid
+                  key={`skeleton-${loadKey}`}
+                  initial={reduceMotion ? false : { opacity: 0.4 }}
+                  animate={{ opacity: 1 }}
+                  exit={reduceMotion ? undefined : { opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ValueCardSkeleton count={4} />
+                </Grid>
+              ) : null}
 
-          {status === "success" ? (
-            <Grid>
-              {valores.map((valor) => (
-                <ValueCard
-                  key={valor.id}
-                  titulo={valor.titulo}
-                  descricao={valor.descricao}
-                />
-              ))}
-            </Grid>
-          ) : null}
+              {status === "error" ? (
+                <ErrorBox
+                  key={`error-${loadKey}`}
+                  role="alert"
+                  initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduceMotion ? undefined : { opacity: 0 }}
+                >
+                  <p>{errorMessage || "Não foi possível carregar os valores."}</p>
+                  <Button variant="primary" onClick={() => void carregar()}>
+                    Tentar novamente
+                  </Button>
+                </ErrorBox>
+              ) : null}
+
+              {status === "success" ? (
+                <Grid
+                  key={`values-${loadKey}`}
+                  initial="hidden"
+                  animate="show"
+                  exit={reduceMotion ? undefined : { opacity: 0 }}
+                  variants={{
+                    hidden: {},
+                    show: {
+                      transition: reduceMotion
+                        ? undefined
+                        : { staggerChildren: 0.08, delayChildren: 0.04 },
+                    },
+                  }}
+                >
+                  {valores.map((valor) => (
+                    <CardMotion
+                      key={valor.id}
+                      variants={
+                        reduceMotion
+                          ? undefined
+                          : {
+                              hidden: { opacity: 0, y: 18, scale: 0.97 },
+                              show: {
+                                opacity: 1,
+                                y: 0,
+                                scale: 1,
+                                transition: {
+                                  duration: 0.35,
+                                  ease: [0.22, 1, 0.36, 1],
+                                },
+                              },
+                            }
+                      }
+                    >
+                      <ValueCard
+                        titulo={valor.titulo}
+                        descricao={valor.descricao}
+                      />
+                    </CardMotion>
+                  ))}
+                </Grid>
+              ) : null}
+            </AnimatePresence>
+          </ValuesBlock>
         </section>
 
         <section aria-labelledby="profissionais-heading">
