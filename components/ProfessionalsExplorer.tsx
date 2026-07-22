@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import styled from "styled-components";
 import { Button } from "@/components/Button";
 import {
@@ -39,16 +40,22 @@ const CheckboxLabel = styled.label`
   white-space: nowrap;
 `;
 
+const Results = styled.div`
+  position: relative;
+  min-height: 28rem;
+`;
+
 const Grid = styled.div`
   display: grid;
   gap: 1rem;
+  align-content: start;
 
   @media (min-width: ${({ theme }) => theme.breakpoints.tablet}) {
     grid-template-columns: repeat(2, 1fr);
   }
 `;
 
-const Card = styled.article`
+const Card = styled(motion.article)`
   padding: 1.25rem;
   border-radius: 12px;
   border: 1px solid ${({ theme }) => theme.colors.border};
@@ -56,6 +63,7 @@ const Card = styled.article`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-height: 10.5rem;
 `;
 
 const Name = styled.h3`
@@ -81,31 +89,71 @@ const Badge = styled.span`
   font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
 
-const Status = styled.p`
-  color: ${({ theme }) => theme.colors.textBody};
-  margin-bottom: 1rem;
+const Empty = styled.p`
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 1.5rem;
+  text-align: center;
+  color: ${({ theme }) => theme.colors.muted};
+  border: 1px dashed ${({ theme }) => theme.colors.border};
+  border-radius: 12px;
+  background: ${({ theme }) => theme.colors.surface};
 `;
+
+const Status = styled.p`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+`;
+
+const SkeletonCard = styled.div`
+  min-height: 10.5rem;
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+`;
+
+const Hint = styled.p`
+  margin: -0.5rem 0 1rem;
+  color: ${({ theme }) => theme.colors.muted};
+  font-size: 0.875rem;
+`;
+
+function normalize(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
 
 export function ProfessionalsExplorer() {
   const [query, setQuery] = useState("");
   const [onlineOnly, setOnlineOnly] = useState(false);
   const [items, setItems] = useState<Profissional[]>([]);
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
-    "idle",
-  );
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [error, setError] = useState("");
+  const reduceMotion = useReducedMotion();
 
   const carregar = useCallback(async () => {
     setStatus("loading");
     setError("");
 
     try {
-      const data = await buscarProfissionais({
-        q: query,
-        online: onlineOnly,
-      });
+      const data = await buscarProfissionais();
       setItems(data);
-      setStatus("success");
+      setStatus("ready");
     } catch (err) {
       setStatus("error");
       setError(
@@ -114,25 +162,32 @@ export function ProfessionalsExplorer() {
           : "Não foi possível carregar profissionais.",
       );
     }
-  }, [query, onlineOnly]);
+  }, []);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      void carregar();
-    }, 300);
-
-    return () => window.clearTimeout(timer);
+    void carregar();
   }, [carregar]);
+
+  const filtered = useMemo(() => {
+    const term = normalize(query);
+
+    return items.filter((item) => {
+      if (onlineOnly && !item.atendeOnline) return false;
+      if (!term) return true;
+      return normalize(item.nome).includes(term);
+    });
+  }, [items, query, onlineOnly]);
 
   return (
     <section aria-labelledby="profissionais-heading">
       <Toolbar>
         <Search
           type="search"
-          placeholder="Buscar por nome, especialidade ou cidade"
+          placeholder="Digite o nome do profissional"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          aria-label="Buscar profissionais"
+          aria-label="Buscar profissional pelo nome"
+          autoComplete="off"
         />
         <CheckboxLabel>
           <input
@@ -142,42 +197,70 @@ export function ProfessionalsExplorer() {
           />
           Só online
         </CheckboxLabel>
-        <Button type="button" variant="secondary" onClick={() => void carregar()}>
-          Atualizar
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => void carregar()}
+          disabled={status === "loading"}
+        >
+          {status === "loading" ? "Carregando…" : "Atualizar lista"}
         </Button>
       </Toolbar>
 
-      {status === "loading" ? (
-        <Status role="status">Carregando profissionais…</Status>
-      ) : null}
+      <Hint>A lista filtra automaticamente enquanto você digita.</Hint>
 
-      {status === "error" ? (
-        <Status role="alert">
-          {error}{" "}
-          <Button type="button" variant="primary" onClick={() => void carregar()}>
-            Tentar novamente
-          </Button>
-        </Status>
-      ) : null}
+      <Results aria-live="polite">
+        {status === "loading" ? (
+          <>
+            <Status role="status">Carregando profissionais…</Status>
+            <Grid>
+              {Array.from({ length: 4 }, (_, index) => (
+                <SkeletonCard key={index} aria-hidden="true" />
+              ))}
+            </Grid>
+          </>
+        ) : null}
 
-      {status === "success" && items.length === 0 ? (
-        <Status>Nenhum profissional encontrado para esses filtros.</Status>
-      ) : null}
+        {status === "error" ? (
+          <Empty role="alert">
+            {error}{" "}
+            <Button type="button" variant="primary" onClick={() => void carregar()}>
+              Tentar novamente
+            </Button>
+          </Empty>
+        ) : null}
 
-      {status === "success" && items.length > 0 ? (
-        <Grid>
-          {items.map((item) => (
-            <Card key={item.id}>
-              <Name>{item.nome}</Name>
-              <Meta>
-                {item.especialidade} · {item.cidade}
-              </Meta>
-              <p>{item.bio}</p>
-              {item.atendeOnline ? <Badge>Atende online</Badge> : null}
-            </Card>
-          ))}
-        </Grid>
-      ) : null}
+        {status === "ready" && filtered.length === 0 ? (
+          <Empty>
+            Nenhum profissional encontrado
+            {query.trim() ? ` para “${query.trim()}”` : ""}.
+          </Empty>
+        ) : null}
+
+        {status === "ready" && filtered.length > 0 ? (
+          <Grid>
+            <AnimatePresence mode="popLayout" initial={false}>
+              {filtered.map((item) => (
+                <Card
+                  key={item.id}
+                  layout={!reduceMotion}
+                  initial={reduceMotion ? false : { opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={reduceMotion ? undefined : { opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  <Name>{item.nome}</Name>
+                  <Meta>
+                    {item.especialidade} · {item.cidade}
+                  </Meta>
+                  <p>{item.bio}</p>
+                  {item.atendeOnline ? <Badge>Atende online</Badge> : null}
+                </Card>
+              ))}
+            </AnimatePresence>
+          </Grid>
+        ) : null}
+      </Results>
     </section>
   );
 }
