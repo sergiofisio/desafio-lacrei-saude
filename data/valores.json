@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1",
+    "titulo": "Inclusão",
+    "descricao": "Plataforma acessível para toda a comunidade LGBTQIAPN+, com linguagem acolhedora e representatividade."
+  },
+  {
+    "id": "2",
+    "titulo": "Acolhimento",
+    "descricao": "Profissionais que compreendem as necessidades específicas de saúde da comunidade e oferecem cuidado sem julgamento."
+  },
+  {
+    "id": "3",
+    "titulo": "Segurança",
+    "descricao": "Validação de pacientes e profissionais, proteção de dados e experiências digitais pensadas para o bem-estar."
+  },
+  {
+    "id": "4",
+    "titulo": "Empatia",
+    "descricao": "Atendimento clínico qualificado, seguro e empático — porque cuidado também é respeito."
+  }
+]

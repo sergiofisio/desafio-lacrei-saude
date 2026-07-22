@@ -1,0 +1,50 @@
+[
+  {
+    "id": "p1",
+    "nome": "Dra. Ana Souza",
+    "especialidade": "Clínica Geral",
+    "cidade": "São Paulo",
+    "atendeOnline": true,
+    "bio": "Atendimento afirmativo e escuta ativa para a comunidade LGBTQIAPN+."
+  },
+  {
+    "id": "p2",
+    "nome": "Dr. Bruno Lima",
+    "especialidade": "Psicologia",
+    "cidade": "Rio de Janeiro",
+    "atendeOnline": true,
+    "bio": "Acompanhamento em saúde mental com foco em acolhimento e segurança."
+  },
+  {
+    "id": "p3",
+    "nome": "Dra. Camila Reis",
+    "especialidade": "Endocrinologia",
+    "cidade": "Belo Horizonte",
+    "atendeOnline": false,
+    "bio": "Cuidado hormonal e acompanhamento respeitoso de trajetórias de transição."
+  },
+  {
+    "id": "p4",
+    "nome": "Dr. Diego Martins",
+    "especialidade": "Dermatologia",
+    "cidade": "Curitiba",
+    "atendeOnline": true,
+    "bio": "Consultas inclusivas, sem julgamento, com linguagem acessível."
+  },
+  {
+    "id": "p5",
+    "nome": "Dra. Elena Prado",
+    "especialidade": "Ginecologia",
+    "cidade": "Salvador",
+    "atendeOnline": false,
+    "bio": "Saúde reprodutiva e preventiva com olhar interseccional."
+  },
+  {
+    "id": "p6",
+    "nome": "Dr. Felipe Nunes",
+    "especialidade": "Psiquiatria",
+    "cidade": "Porto Alegre",
+    "atendeOnline": true,
+    "bio": "Avaliação e acompanhamento psiquiátrico com prática afirmativa."
+  }
+]

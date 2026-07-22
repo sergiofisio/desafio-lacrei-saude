@@ -1,0 +1,22 @@
+[
+  {
+    "id": "f1",
+    "pergunta": "A Lacrei Saúde é gratuita?",
+    "resposta": "O cadastro na plataforma é gratuito. Valores de consulta dependem de cada profissional de saúde."
+  },
+  {
+    "id": "f2",
+    "pergunta": "Como sei se o atendimento é seguro?",
+    "resposta": "Validamos pacientes e profissionais, protegemos dados pessoais e priorizamos experiências digitais acessíveis."
+  },
+  {
+    "id": "f3",
+    "pergunta": "Posso buscar profissionais por especialidade?",
+    "resposta": "Sim. Na página Sobre você pode filtrar por especialidade, cidade ou atendimento online."
+  },
+  {
+    "id": "f4",
+    "pergunta": "Tem tema escuro?",
+    "resposta": "Tem. Use o botão Escuro/Claro no cabeçalho — a preferência fica salva no navegador."
+  }
+]
